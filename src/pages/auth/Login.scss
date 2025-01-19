@@ -1,0 +1,21 @@
+.container-login {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    .container-form {
+        max-width: 26rem;
+        padding: 4rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .card-login {
+            background: #ffffff;
+        }
+
+        .logo {
+            max-width: 24rem;
+        }
+    }
+}
