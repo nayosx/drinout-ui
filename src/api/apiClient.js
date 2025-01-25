@@ -33,6 +33,7 @@ axiosInstance.interceptors.response.use(
       if (status === 401) {
         sessionStorage.removeItem("authToken");
         history.push("/");
+        window.location.reload(); 
       } else if (status >= 500) {
         console.error("Error del servidor:", error.response.data?.message || "Problema en el servidor");
       }

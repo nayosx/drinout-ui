@@ -18,5 +18,5 @@ export const login = async (credentials) => {
 
 export const logout = () => {
   sessionStorage.removeItem('authToken');
-  window.location.href = '/login';
+  window.location.href = '/';
 };

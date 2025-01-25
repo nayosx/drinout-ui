@@ -14,8 +14,8 @@ const Login = () => {
     const handleSubmit = async (values, { setSubmitting }) => {
         setIsLoading(true);
         try {
-            await login(values); // Llama a la función login directamente
-            navigate('/me'); // Redirige al perfil en caso de éxito
+            await login(values);
+            navigate('/me');
         } catch (error) {
             alert('Usuario o contraseña incorrectos. Intente nuevamente.');
         } finally {
@@ -43,7 +43,7 @@ const Login = () => {
                             onSubmit={handleSubmit}
                         >
                             {({ isSubmitting, isValid, dirty }) => (
-                                <Form className='form'>
+                                <Form className='form' autoComplete="off">
                                     <div>
                                         <FaUser className="u-icon-x16" /> <label htmlFor="username">Usuario</label>
                                         <Field
