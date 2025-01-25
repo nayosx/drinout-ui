@@ -16,7 +16,7 @@ const Me = () => {
     };
 
     fetchUser();
-  }, []); // El efecto se ejecutará una sola vez
+  }, []);
 
   if (!user) {
     return <div>Loading...</div>;
