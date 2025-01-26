@@ -6,6 +6,7 @@ import loginSchema from './Login.validate';
 import { login } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaKey } from 'react-icons/fa';
+import routes from '../../routes';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -15,8 +16,9 @@ const Login = () => {
         setIsLoading(true);
         try {
             await login(values);
-            navigate('/me');
+            navigate(routes.transaction.list);
         } catch (error) {
+            console.error('Error logging in:', error);
             alert('Usuario o contraseña incorrectos. Intente nuevamente.');
         } finally {
             setIsLoading(false);

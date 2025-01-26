@@ -3,10 +3,11 @@ import axiosInstance from './apiClient';
 export const login = async (credentials) => {
   try {
     const response = await axiosInstance.post('/auth/login', credentials);
-    const { access_token } = response.data;
+    const { access_token, user } = response.data;
 
     if (access_token) {
       sessionStorage.setItem('authToken', access_token);
+      sessionStorage.setItem('user', JSON.stringify(user));
     }
 
     return response.data;
@@ -17,6 +18,6 @@ export const login = async (credentials) => {
 };
 
 export const logout = () => {
-  sessionStorage.removeItem('authToken');
+  sessionStorage.clear();
   window.location.href = '/';
 };

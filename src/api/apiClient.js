@@ -31,7 +31,7 @@ axiosInstance.interceptors.response.use(
       const { status } = error.response;
 
       if (status === 401) {
-        sessionStorage.removeItem("authToken");
+        sessionStorage.clear();
         history.push("/");
         window.location.reload(); 
       } else if (status >= 500) {

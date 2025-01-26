@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import ReactQuill from 'react-quill-new';
+import validationSchema from '../AddEdit.validate';
 import { getPaymentTypes } from '../../../../api/paymentType';
+import 'react-quill-new/dist/quill.snow.css';
 import './Add.scss';
+import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa';
 
 const AddTransaction = () => {
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchPaymentTypes = async () => {
       try {
         const types = await getPaymentTypes();
         setPaymentTypes(types);
+        const userData = sessionStorage.getItem('user');
+
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
       } catch (error) {
         console.error('Error fetching payment types:', error);
       } finally {
@@ -24,27 +33,16 @@ const AddTransaction = () => {
   }, []);
 
   const initialValues = {
-    description: '',
+    user_id: user ? user.id : '',
+    detail: '',
     amount: '',
     paymentType: '',
+    transactionType: '',
   };
-
-  const validationSchema = Yup.object().shape({
-    description: Yup.string().required('La descripción es obligatoria.'),
-    amount: Yup.number()
-      .required('El monto es obligatorio.')
-      .positive('El monto debe ser mayor a 0.')
-      .max(9999999, 'El monto no puede exceder 9,999,999.')
-      .test(
-        'max-decimals',
-        'El monto solo puede tener hasta 2 decimales.',
-        (value) => /^\d+(\.\d{1,2})?$/.test(value)
-      ),
-    paymentType: Yup.string().required('Debe seleccionar un tipo de pago.'),
-  });
 
   const handleSubmit = async (values, { resetForm }) => {
     console.log('Valores del formulario:', values);
+    // Aquí puedes enviar los datos a la API
     resetForm();
   };
 
@@ -60,19 +58,18 @@ const AddTransaction = () => {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting, setFieldValue, values }) => (
             <Form className="form">
               <div className="form-group">
-                <label htmlFor="description">Descripción:</label>
-                <Field
-                  id="description"
-                  name="description"
-                  type="text"
-                  className="form-control"
-                  placeholder="Descripción de la transacción"
+                <label htmlFor="detail">Descripción:</label>
+                <ReactQuill
+                  theme="snow"
+                  value={values.detail}
+                  onChange={(value) => setFieldValue('detail', value)}
+                  className="react-quill"
                 />
                 <ErrorMessage
-                  name="description"
+                  name="detail"
                   component="div"
                   className="error-text"
                 />
@@ -107,6 +104,35 @@ const AddTransaction = () => {
                 </Field>
                 <ErrorMessage
                   name="paymentType"
+                  component="div"
+                  className="error-text"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Tipo de transacción:</label>
+                <div role="group" className="radio-group">
+                  <label>
+                    <Field
+                      type="radio"
+                      name="transactionType"
+                      value="IN"
+                      className="radio-input"
+                    />
+                    <FaPlusCircle /> Entrada
+                  </label>
+                  <label>
+                    <Field
+                      type="radio"
+                      name="transactionType"
+                      value="OUT"
+                      className="radio-input"
+                    />
+                    <FaMinusCircle /> Salida
+                  </label>
+                </div>
+                <ErrorMessage
+                  name="transactionType"
                   component="div"
                   className="error-text"
                 />

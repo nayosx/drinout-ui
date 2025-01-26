@@ -1,14 +1,16 @@
 import axiosInstance from './apiClient';
 
 
-export const getTransactions = async () => {
-    try {
-      const response = await axiosInstance.get('/transactions');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching payment types:', error);
-      throw error;
-    }
+export const getTransactions = async (queryParams = {}) => {
+  try {
+    const response = await axiosInstance.get('/transactions', {
+      params: queryParams,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw error;
+  }
 };
 
 export const createTransaction = async (transactionData) => {
