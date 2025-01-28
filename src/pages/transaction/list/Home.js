@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getTransactions } from '../../../api/transaction';
+import DOMPurify from 'dompurify';
 import './Home.scss';
 
 export const HomeTransaction = () => {
@@ -9,11 +10,11 @@ export const HomeTransaction = () => {
     start_date: '',
     end_date: '',
   });
+  const [expandedDetails, setExpandedDetails] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // Obtener usuario actual desde sessionStorage
     const userData = sessionStorage.getItem('user');
     if (userData) {
       setCurrentUser(JSON.parse(userData));
@@ -61,12 +62,26 @@ export const HomeTransaction = () => {
     }
   };
 
+  const truncateHTML = (html, maxLength) => {
+    const cleanText = DOMPurify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    if (cleanText.length <= maxLength) {
+      return cleanText;
+    }
+    return `${cleanText.slice(0, maxLength)}...`;
+  };
+
+  const toggleDetail = (id) => {
+    setExpandedDetails((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   return (
     <div className="home-container">
       <h1 className="home-title">Transacciones</h1>
       <p>¡Bienvenido a la página de transacciones!</p>
 
-      {/* Formulario para filtros */}
       <form className="filter-form" onSubmit={handleFilterSubmit}>
         <div>
           <label htmlFor="start_date">Fecha de Inicio:</label>
@@ -97,11 +112,12 @@ export const HomeTransaction = () => {
             type="button"
             onClick={handleSetUserFilter}
             className="btn-user-filter"
-          >Mis movimientos</button>
+          >
+            Mis movimientos
+          </button>
         </div>
       </form>
 
-      {/* Tabla de transacciones */}
       {isLoading ? (
         <p>Cargando transacciones...</p>
       ) : (
@@ -119,14 +135,30 @@ export const HomeTransaction = () => {
           </thead>
           <tbody>
             {transactions.length > 0 ? (
-              transactions.map((transaction) => (
+              transactions.map((transaction, index) => (
                 <tr key={transaction.id}>
-                  <td>{transaction.id}</td>
-                  <td>{transaction.user_id}</td>
+                  <td>{(index + 1)}</td>
+                  <td>{transaction.user_name}</td>
                   <td>{transaction.transaction_type}</td>
-                  <td>{transaction.payment_type_id}</td>
-                  <td>{transaction.detail}</td>
-                  <td>${transaction.amount.toFixed(2)}</td>
+                  <td>{transaction.payment_type_name}</td>
+                  <td>
+                    {expandedDetails[transaction.id] ? (
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: DOMPurify.sanitize(transaction.detail),
+                        }}
+                      />
+                    ) : (
+                      <div>{truncateHTML(transaction.detail, 30)}</div>
+                    )}
+                    <button
+                      onClick={() => toggleDetail(transaction.id)}
+                      className="btn-view-more"
+                    >
+                      {expandedDetails[transaction.id] ? 'Ver menos' : 'Ver más'}
+                    </button>
+                  </td>
+                  <td>${transaction.amount}</td>
                   <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
                 </tr>
               ))

@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import ReactQuill from 'react-quill-new';
 import validationSchema from '../AddEdit.validate';
 import { getPaymentTypes } from '../../../../api/paymentType';
+import { createTransaction } from '../../../../api/transaction';
 import 'react-quill-new/dist/quill.snow.css';
 import './Add.scss';
 import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa';
@@ -41,9 +42,22 @@ const AddTransaction = () => {
   };
 
   const handleSubmit = async (values, { resetForm }) => {
-    console.log('Valores del formulario:', values);
-    // Aquí puedes enviar los datos a la API
-    resetForm();
+    try {
+      const payload = {
+        user_id: values.user_id,
+        transaction_type: values.transactionType,
+        payment_type_id: parseInt(values.paymentType, 10),
+        detail: values.detail,
+        amount: parseFloat(values.amount).toFixed(2),
+      };
+
+      await createTransaction(payload);
+      resetForm();
+      alert('Transacción creada exitosamente.');
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      alert('Hubo un error al crear la transacción.');
+    }
   };
 
   return (
@@ -54,6 +68,7 @@ const AddTransaction = () => {
         <p>Cargando tipos de pago...</p>
       ) : (
         <Formik
+          enableReinitialize
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
