@@ -104,7 +104,6 @@ export const HomeTransaction = () => {
           />
         </div>
         <div className="filter-buttons">
-          <button type="submit">Filtrar</button>
           <button type="button" onClick={handleClearFilters}>
             Limpiar filtros
           </button>

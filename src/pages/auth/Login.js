@@ -16,7 +16,7 @@ const Login = () => {
         setIsLoading(true);
         try {
             await login(values);
-            navigate(routes.transaction.list);
+            navigate(routes.home);
         } catch (error) {
             console.error('Error logging in:', error);
             alert('Usuario o contraseña incorrectos. Intente nuevamente.');
