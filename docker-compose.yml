@@ -1,0 +1,9 @@
+services:
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: drinout-ui
+    ports:
+      - "3200:80"
+    restart: always
