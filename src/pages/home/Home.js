@@ -101,6 +101,9 @@ const Home = () => {
       <Navbar />
 
       <div className="home-container">
+        {currentUser && (
+          <h2 className="welcome-message">¡Bienvenido, {currentUser.name}!</h2>
+        )}
 
         <h1>Jornada Laboral</h1>
         <p>Administra tu jornada de trabajo.</p>
