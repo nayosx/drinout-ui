@@ -1,15 +1,15 @@
 import axiosInstance from './apiClient';
 
-export const getWorkSessions = async () => {
+export const getWorkSessions = async (userId = null) => {
   try {
-    const response = await axiosInstance.get('/work_sessions');
+    const params = userId ? { user_id: userId } : {};
+    const response = await axiosInstance.get('/work_sessions', { params });
     return response.data;
   } catch (error) {
     console.error('Error fetching work sessions:', error);
     throw error;
   }
 };
-
 
 export const getWorkSessionLastest = async () => {
   try {

@@ -19,31 +19,29 @@ const SALVADOR_TIMEZONE = 'America/El_Salvador';
 const Home = () => {
   const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const userData = sessionStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  });
   const [workDuration, setWorkDuration] = useState('');
   const [workSessions, setWorkSessions] = useState([]);
 
   useEffect(() => {
-    const fetchUser = () => {
-      const userData = sessionStorage.getItem('user');
-      if (userData) {
-        setCurrentUser(JSON.parse(userData));
-      }
-    };
+    if (!currentUser) return;
 
     const fetchWorkSession = async () => {
       setLoading(true);
       try {
         const response = await getWorkSessionLastest();
-        if (response.session !== null && response.session.status !== 'COMPLETED') {
+        if (response.session && response.session.status !== 'COMPLETED') {
           setActiveSession(response.session);
-          calculateWorkDuration(response.session.login_time, response.session.logout_time);
+          setWorkDuration(calculateWorkDuration(response.session.login_time, response.session.logout_time));
         } else {
           setActiveSession(null);
           setWorkDuration('');
         }
       } catch (error) {
-        console.error('Error fetching work sessions:', error);
+        console.error('Error fetching work session:', error);
         setActiveSession(null);
         setWorkDuration('');
       } finally {
@@ -51,14 +49,23 @@ const Home = () => {
       }
     };
 
-    fetchUser();
+    const fetchWorkSessions = async () => {
+      try {
+        const sessions = await getWorkSessions(currentUser.id);
+        setWorkSessions(sessions);
+      } catch (error) {
+        console.error('Error fetching work sessions list:', error);
+      }
+    };
+
     fetchWorkSession();
     fetchWorkSessions();
-  }, []);
+  }, [currentUser]);
 
   const fetchWorkSessions = async () => {
+    if (!currentUser) return;
     try {
-      const sessions = await getWorkSessions();
+      const sessions = await getWorkSessions(currentUser.id);
       setWorkSessions(sessions);
     } catch (error) {
       console.error('Error fetching work sessions list:', error);
@@ -85,7 +92,7 @@ const Home = () => {
     try {
       const response = await startWorkSession();
       setActiveSession(response.session);
-      calculateWorkDuration(response.session.login_time, null);
+      setWorkDuration(calculateWorkDuration(response.session.login_time, null));
       fetchWorkSessions();
     } catch (error) {
       console.error('Error starting work session:', error);
@@ -138,11 +145,11 @@ const Home = () => {
           </div>
         )}
 
-        <hr className='grey-v1' />
+        <hr className="grey-v1" />
         <h2>Historial de Jornadas Laborales</h2>
         <table className="work-session-table">
           <thead>
-            <tr className='u-bg-grey-80 u-text-grey-30'>
+            <tr className="u-bg-grey-80 u-text-grey-30">
               <th>Fecha</th>
               <th>Inicio</th>
               <th>Fin</th>
@@ -154,15 +161,25 @@ const Home = () => {
             {workSessions.length > 0 ? (
               workSessions.map((session, index) => (
                 <tr key={session.id} className={index % 2 !== 0 ? 'u-bg-grey-30' : ''}>
-                  <td className='u-pl-2 u-pr-2 u-text-center'>{dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('DD MMM YYYY')}</td>
-                  <td className='u-pl-2 u-pr-2 u-text-center'>{dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A')}</td>
-                  <td className='u-pl-2 u-pr-2 u-text-center'>{session.logout_time ? dayjs.utc(session.logout_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A') : 'En progreso'}</td>
-                  <td className='u-pl-2 u-pr-2 u-text-center'>{calculateWorkDuration(session.login_time, session.logout_time)}</td>
-                  <td className='u-pl-2 u-pr-2 u-text-center'>
+                  <td className="u-pl-2 u-pr-2 u-text-center">
+                    {dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('DD MMM YYYY')}
+                  </td>
+                  <td className="u-pl-2 u-pr-2 u-text-center">
+                    {dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A')}
+                  </td>
+                  <td className="u-pl-2 u-pr-2 u-text-center">
+                    {session.logout_time
+                      ? dayjs.utc(session.logout_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A')
+                      : 'En progreso'}
+                  </td>
+                  <td className="u-pl-2 u-pr-2 u-text-center">
+                    {calculateWorkDuration(session.login_time, session.logout_time)}
+                  </td>
+                  <td className="u-pl-2 u-pr-2 u-text-center">
                     {session.status === 'COMPLETED' ? (
-                      <FaCheckCircle className='u-icon-x16 u-text-green' />
+                      <FaCheckCircle className="u-icon-x16 u-text-green" />
                     ) : (
-                      <GrInProgress className='u-icon-x16 u-text-cyan-20' />
+                      <GrInProgress className="u-icon-x16 u-text-cyan-20" />
                     )}
                   </td>
                 </tr>
