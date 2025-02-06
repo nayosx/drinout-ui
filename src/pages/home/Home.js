@@ -6,7 +6,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import duration from 'dayjs/plugin/duration';
 import 'dayjs/locale/es';
-import './Home.scss';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
