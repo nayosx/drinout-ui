@@ -1,13 +1,13 @@
 {
   "name": "drinout-ui",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "dependencies": {
     "axios": "^1.7.9",
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.3",
-    "drstyles": "github:nayosx/drstyles",
+    "drstyles": "github:nayosx/drstyles#main",
     "formik": "^2.4.6",
     "history": "^5.3.0",
     "react": "^19.0.0",

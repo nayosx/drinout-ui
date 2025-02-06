@@ -78,7 +78,7 @@ const Login = () => {
                                         <button
                                             type="submit"
                                             disabled={isSubmitting || isLoading || !isValid || !dirty}
-                                            className='u-btn u-btn-primary'
+                                            className='u-btn u-btn--large u-btn-primary '
                                         >
                                             {isLoading ? 'Iniciando...' : 'Iniciar'}
                                         </button>

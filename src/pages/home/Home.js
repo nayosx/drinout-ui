@@ -115,11 +115,11 @@ const Home = () => {
         ) : (
           <div className="session-actions">
             {activeSession ? (
-              <button className="btn-end" onClick={handleEndSession}>
+              <button type="button" className="u-btn u-btn-secondary" onClick={handleEndSession}>
                 Finalizar Jornada
               </button>
             ) : (
-              <button className="btn-start" onClick={handleStartSession}>
+              <button className="u-btn u-btn-secondary-green" onClick={handleStartSession}>
                 Iniciar Jornada
               </button>
             )}
