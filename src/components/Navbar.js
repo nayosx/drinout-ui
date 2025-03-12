@@ -1,21 +1,18 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import routes from '../routes';
-import { GrLogout } from "react-icons/gr";
+import { FiMenu } from 'react-icons/fi';
+import useSidebarStore from '../store/useSidebarStore';
+import useNavbarStore from '../store/useNavbarStore';
 
 const Navbar = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate(routes.login);
-  };
+  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar);
+  const title = useNavbarStore((state) => state.title);
 
   return (
-    <nav className="u-bg-blue u-text-white-pure u-d-flex u-d-flex-align-center u-pt-1 u-pb-1 u-pl-2 u-pr-2">
-      <h1 className="navbar-title">Sistema de Gestión</h1>
-      <div className='u-d-flex-spacer'></div>
-      <button className="u-btn u-btn--no-width u-btn-primary-red-20 u-pl-1 u-pr-1" onClick={handleLogout}><GrLogout /> Cerrar Sesión</button>
+    <nav className="l-panel__navbar navbar">
+      <button className="menu-button" onClick={toggleSidebar}>
+        <FiMenu size={24} />
+      </button>
+      <h1 className="navbar-title">{title}</h1>
     </nav>
   );
 };

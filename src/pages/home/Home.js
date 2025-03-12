@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import Navbar from '../../components/Navbar';
-import { startWorkSession, endWorkSession, getWorkSessionLastest, getWorkSessions } from '../../api/workSessions';
+import React, { useEffect, useState, useCallback } from 'react';
+import { startWorkSession, endWorkSession, getWorkSessions } from '../../api/workSessions';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -8,6 +7,7 @@ import duration from 'dayjs/plugin/duration';
 import { FaCheckCircle } from 'react-icons/fa';
 import { GrInProgress } from 'react-icons/gr';
 import 'dayjs/locale/es';
+import useAppStore from '../../store/useAppStore';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -19,58 +19,40 @@ const SALVADOR_TIMEZONE = 'America/El_Salvador';
 const Home = () => {
   const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(() => {
+  const [currentUser] = useState(() => {
     const userData = sessionStorage.getItem('user');
     return userData ? JSON.parse(userData) : null;
   });
-  const [workDuration, setWorkDuration] = useState('');
   const [workSessions, setWorkSessions] = useState([]);
+  const setTitle = useAppStore((state) => state.setTitle);
 
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const fetchWorkSession = async () => {
-      setLoading(true);
-      try {
-        const response = await getWorkSessionLastest();
-        if (response.session && response.session.status !== 'COMPLETED') {
-          setActiveSession(response.session);
-          setWorkDuration(calculateWorkDuration(response.session.login_time, response.session.logout_time));
-        } else {
-          setActiveSession(null);
-          setWorkDuration('');
-        }
-      } catch (error) {
-        console.error('Error fetching work session:', error);
-        setActiveSession(null);
-        setWorkDuration('');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchWorkSessions = async () => {
-      try {
-        const sessions = await getWorkSessions(currentUser.id);
-        setWorkSessions(sessions);
-      } catch (error) {
-        console.error('Error fetching work sessions list:', error);
-      }
-    };
-
-    fetchWorkSession();
-    fetchWorkSessions();
-  }, [currentUser]);
-
-  const fetchWorkSessions = async () => {
-    if (!currentUser) return;
+  const fetchWorkSessions = useCallback(async (userId) => {
+    if (!userId) return;
+    setLoading(true);
     try {
-      const sessions = await getWorkSessions(currentUser.id);
+      const sessions = await getWorkSessions(userId);
+      const lastSession = sessions.find(session => session.status !== 'COMPLETED');
+
+      if (lastSession) {
+        setActiveSession(lastSession);
+      } else {
+        setActiveSession(null);
+      }
+
       setWorkSessions(sessions);
     } catch (error) {
       console.error('Error fetching work sessions list:', error);
+      setActiveSession(null);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setTitle('DayLog');
+    if (!currentUser) return;
+    fetchWorkSessions(currentUser.id);
+  }, [setTitle, currentUser, fetchWorkSessions]);
 
   const calculateWorkDuration = (loginTime, logoutTime) => {
     if (!loginTime) return '0h 0m';
@@ -79,10 +61,7 @@ const Home = () => {
     const logout = logoutTime ? dayjs.utc(logoutTime).tz(SALVADOR_TIMEZONE, true) : dayjs();
 
     const workedDuration = dayjs.duration(logout.diff(login));
-    const workedHours = Math.floor(workedDuration.asHours());
-    const workedMinutes = workedDuration.minutes();
-
-    return `${workedHours}h ${workedMinutes}m`;
+    return `${Math.floor(workedDuration.asHours())}h ${workedDuration.minutes()}m`;
   };
 
   const handleStartSession = async () => {
@@ -92,8 +71,7 @@ const Home = () => {
     try {
       const response = await startWorkSession();
       setActiveSession(response.session);
-      setWorkDuration(calculateWorkDuration(response.session.login_time, null));
-      fetchWorkSessions();
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
     } catch (error) {
       console.error('Error starting work session:', error);
     } finally {
@@ -106,8 +84,7 @@ const Home = () => {
     try {
       await endWorkSession();
       setActiveSession(null);
-      setWorkDuration('');
-      fetchWorkSessions();
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
     } catch (error) {
       console.error('Error ending work session:', error);
     } finally {
@@ -115,11 +92,12 @@ const Home = () => {
     }
   };
 
-  return (
-    <div>
-      <Navbar />
+  const transformDate = (date, isTime = false) => {
+    return dayjs.utc(date).tz(SALVADOR_TIMEZONE, true).format(isTime ? 'hh:mm A' : 'DD MMM YYYY');
+  };
 
-      <div className="home-container">
+  return (
+    <div className="home-container">
         {currentUser && (
           <h2 className="welcome-message">¡Bienvenido, {currentUser.name}!</h2>
         )}
@@ -127,14 +105,12 @@ const Home = () => {
         <h1>Jornada Laboral</h1>
         <p>Administra tu jornada de trabajo.</p>
 
-        {workDuration && <p className="work-duration">{workDuration}</p>}
-
         {loading ? (
           <p>Cargando...</p>
         ) : (
           <div className="session-actions">
             {activeSession ? (
-              <button type="button" className="u-btn u-btn-secondary" onClick={handleEndSession}>
+              <button type="button" className="u-btn u-btn-secondary-red-20" onClick={handleEndSession}>
                 Finalizar Jornada
               </button>
             ) : (
@@ -162,14 +138,14 @@ const Home = () => {
               workSessions.map((session, index) => (
                 <tr key={session.id} className={index % 2 !== 0 ? 'u-bg-grey-30' : ''}>
                   <td className="u-pl-2 u-pr-2 u-text-center">
-                    {dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('DD MMM YYYY')}
+                    {transformDate(session.login_time)}
                   </td>
                   <td className="u-pl-2 u-pr-2 u-text-center">
-                    {dayjs.utc(session.login_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A')}
+                    {transformDate(session.login_time, true)}
                   </td>
                   <td className="u-pl-2 u-pr-2 u-text-center">
                     {session.logout_time
-                      ? dayjs.utc(session.logout_time).tz(SALVADOR_TIMEZONE, true).format('hh:mm A')
+                      ? transformDate(session.logout_time, true)
                       : 'En progreso'}
                   </td>
                   <td className="u-pl-2 u-pr-2 u-text-center">
@@ -192,7 +168,6 @@ const Home = () => {
           </tbody>
         </table>
       </div>
-    </div>
   );
 };
 
