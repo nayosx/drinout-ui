@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import useSidebarStore from '../store/useSidebarStore';
-import { useNavigate } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
 import routes from '../routes';
 
 const Sidebar = () => {
   const { isOpen, toggleSidebar } = useSidebarStore();
   const sidebarRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -27,24 +25,33 @@ const Sidebar = () => {
     };
   }, [isOpen, toggleSidebar]);
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate(routes.login);
-  };
-
   return (
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
-      <div ref={sidebarRef} className="l-panel__sidebar u-bg-white">
-        <button className="close-btn" onClick={() => toggleSidebar(false)}>
-          <IoClose size={24} />
-        </button>
+      <div ref={sidebarRef} className="l-panel__sidebar u-bg-white sidebar u-p-all-none">
+        
         <nav className="sidebar-menu">
           <ul>
-            <li><a href={routes.home}>Inicio</a></li>
-            <li><a href={routes.home}>Inicio</a></li>
-            <li><a href={routes.transactions}>Transacciones</a></li>
-            <li><a href={routes.profile}>Mi Perfil</a></li>
-            <li><button onClick={handleLogout}>Cerrar Sesión</button></li>
+            <li className='u-text-right'>
+              <button 
+                type='button' 
+                className="close-btn u-mr-1" 
+                onClick={() => toggleSidebar(false)}>
+                <IoClose size={24} />
+              </button>
+            </li>
+            <li>
+              <a className='u-btn u-btn--large u-btn--text-left' href={routes.home}>
+                Inicio
+              </a>
+            </li>
+            <li><a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.list}>Transacciones</a></li>
+
+
+            <li>
+              <a className='u-btn u-btn--large u-btn--text-left' href={routes.me}>
+                Mis datos
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
