@@ -27,11 +27,11 @@ const Login = () => {
     };
 
     return (
-        <div className='container-login'>
+        <div className='container-login u-bg-white'>
             <div className='container-form'>
-                <div className='u-d-flex u-d-flex-column u-d-flex-gap-3 u-card u-card--shadow card-login'>
+                <div className='u-d-flex u-d-flex-column u-d-flex-gap-3 u-card u-card--shadow u-bg-white-pure'>
                     <div className='u-card__content'>
-                        <h1 className='u-text-center'>Dr KashFlow</h1>
+                        <h1 className='u-text-center'>DrClin</h1>
                         <div className='u-text-center'>
                             <img src={logo} alt="DrClin Logo" className='logo' />
                         </div>
@@ -47,7 +47,9 @@ const Login = () => {
                             {({ isSubmitting, isValid, dirty }) => (
                                 <Form className='form' autoComplete="off">
                                     <div>
-                                        <FaUser className="u-icon-x16" /> <label htmlFor="username">Usuario</label>
+                                        <div className='u-d-flex u-d-flex-gap-2 u-d-flex-align-center u-d-flex-justify-flex-start u-mb-1'>
+                                            <FaUser className="u-icon-x16" /> <label htmlFor="username">Usuario</label>
+                                        </div>
                                         <Field
                                             className="form-control"
                                             type="text"
@@ -61,7 +63,10 @@ const Login = () => {
                                         />
                                     </div>
                                     <div>
-                                        <FaKey className="u-icon-x16" /> <label htmlFor="password">Contraseña</label>
+                                        <div className='u-d-flex u-d-flex-gap-2 u-d-flex-align-center u-d-flex-justify-flex-start u-mb-1'>
+                                            <FaKey className="u-icon-x16" /> <label htmlFor="password">Contraseña</label>
+                                        </div>
+                                        
                                         <Field
                                             className="form-control"
                                             type="password"

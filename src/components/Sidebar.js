@@ -44,9 +44,16 @@ const Sidebar = () => {
                 Inicio
               </a>
             </li>
-            <li><a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.list}>Transacciones</a></li>
-
-
+            <li>
+              <a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.list}>
+                Transacciones
+              </a>
+            </li>
+            <li>
+              <a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.add}>
+                Agregar pago
+              </a>
+            </li>
             <li>
               <a className='u-btn u-btn--large u-btn--text-left' href={routes.me}>
                 Mis datos
