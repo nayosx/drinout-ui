@@ -43,9 +43,16 @@ export const endWorkSession = async () => {
 
   
 
-export const forceEndWorkSession = async () => {
+export const forceEndWorkSession = async (userId, comments) => {
   try {
-    const response = await axiosInstance.post('/work_sessions/force_end');
+    const response = await axiosInstance.post('/work_sessions/force_end', {
+      user_id: userId,
+      comments: comments
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error forcing end of work session:', error);

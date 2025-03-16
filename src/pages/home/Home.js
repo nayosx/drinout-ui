@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { startWorkSession, endWorkSession, getWorkSessions } from '../../api/workSessions';
+import { startWorkSession, forceEndWorkSession, getWorkSessions, endWorkSession } from '../../api/workSessions';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import duration from 'dayjs/plugin/duration';
-import { FaCheckCircle } from 'react-icons/fa';
 import { GrInProgress } from 'react-icons/gr';
 import 'dayjs/locale/es';
 import useAppStore from '../../store/useAppStore';
+import { HiDotsVertical } from "react-icons/hi";
+import Modal from '../../components/Modal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -24,6 +25,8 @@ const Home = () => {
     return userData ? JSON.parse(userData) : null;
   });
   const [workSessions, setWorkSessions] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comment, setComment] = useState('');
   const setTitle = useAppStore((state) => state.setTitle);
 
   const fetchWorkSessions = useCallback(async (userId) => {
@@ -92,12 +95,38 @@ const Home = () => {
     }
   };
 
+  const handleForceEndSession = async (comments) => {
+    setLoading(true);
+    try {
+      await forceEndWorkSession(currentUser.id, comments);
+      setActiveSession(null);
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
+    } catch (error) {
+      console.error('Error forcing end of work session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const transformDate = (date, isTime = false) => {
     return dayjs.utc(date).tz(SALVADOR_TIMEZONE, true).format(isTime ? 'hh:mm A' : 'DD MMM YYYY');
   };
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = () => {
+    handleForceEndSession(comment);
+    handleCloseModal();
+  };
+
   return (
-    <div className="home-container">
+    <div className="home-container u-w-100">
         {currentUser && (
           <h2 className="welcome-message">¡Bienvenido, {currentUser.name}!</h2>
         )}
@@ -122,51 +151,59 @@ const Home = () => {
         )}
 
         <hr className="grey-v1" />
-        <h2>Historial de Jornadas Laborales</h2>
-        <table className="work-session-table">
-          <thead>
-            <tr className="u-bg-grey-80 u-text-grey-30">
-              <th>Fecha</th>
-              <th>Inicio</th>
-              <th>Fin</th>
-              <th>Tiempo Laborado</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {workSessions.length > 0 ? (
-              workSessions.map((session, index) => (
-                <tr key={session.id} className={index % 2 !== 0 ? 'u-bg-grey-30' : ''}>
-                  <td className="u-pl-2 u-pr-2 u-text-center">
-                    {transformDate(session.login_time)}
-                  </td>
-                  <td className="u-pl-2 u-pr-2 u-text-center">
-                    {transformDate(session.login_time, true)}
-                  </td>
-                  <td className="u-pl-2 u-pr-2 u-text-center">
-                    {session.logout_time
-                      ? transformDate(session.logout_time, true)
-                      : 'En progreso'}
-                  </td>
-                  <td className="u-pl-2 u-pr-2 u-text-center">
-                    {calculateWorkDuration(session.login_time, session.logout_time)}
-                  </td>
-                  <td className="u-pl-2 u-pr-2 u-text-center">
-                    {session.status === 'COMPLETED' ? (
-                      <FaCheckCircle className="u-icon-x16 u-text-green" />
-                    ) : (
-                      <GrInProgress className="u-icon-x16 u-text-cyan-20" />
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5">No hay registros de jornadas laborales.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <h2 className='u-mb-2'>Historial de Jornadas Laborales</h2>
+
+        <div className="u-mb-2">
+          {workSessions.length > 0 ? (
+            workSessions.map((session, index) => (
+              <div key={session.id} className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'}`}>
+                <div className='u-w-100'>
+                  <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-3 u-mb-1'>
+                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between'>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {transformDate(session.login_time)}</div>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Inicio:</strong> {transformDate(session.login_time, true)}</div>
+                    </div>
+                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between'>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {session.logout_time
+                            ? transformDate(session.logout_time)
+                            : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong className='u-mr-2'>Fin:</strong>
+                          {session.logout_time
+                          ? transformDate(session.logout_time, true)
+                          : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
+                    </div>
+                  </div>
+                  <div><strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}</div>
+                </div>
+                <div>
+                  <button 
+                    className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle" 
+                    disabled={session.status === 'COMPLETED'}
+                    onClick={handleOpenModal}
+                  >
+                    <HiDotsVertical />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No hay registros de jornadas laborales.</p>
+          )}
+        </div>
+
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <textarea 
+            className="u-w-100 u-mb-2" 
+            rows="4" 
+            placeholder="Escribe tu comentario..." 
+            value={comment} 
+            onChange={(e) => setComment(e.target.value)}
+          ></textarea>
+          <div className="u-d-flex u-d-flex-justify-end u-d-flex-gap-2">
+            <button className="u-btn u-btn-secondary-red-20" onClick={handleCloseModal}>Cancelar</button>
+            <button className="u-btn u-btn-secondary-green" onClick={handleSubmit}>Enviar</button>
+          </div>
+        </Modal>
       </div>
   );
 };
