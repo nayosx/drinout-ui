@@ -157,13 +157,13 @@ const Home = () => {
           {workSessions.length > 0 ? (
             workSessions.map((session, index) => (
               <div key={session.id} className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'}`}>
-                <div className='u-w-100'>
-                  <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-3 u-mb-1'>
-                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between'>
+                <div className='u-d-flex u-d-flex-column u-d-flex-gap-2 u-w-100'>
+                  <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-4'>
+                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
                       <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {transformDate(session.login_time)}</div>
                       <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Inicio:</strong> {transformDate(session.login_time, true)}</div>
                     </div>
-                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between'>
+                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
                       <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {session.logout_time
                             ? transformDate(session.logout_time)
                             : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
@@ -173,17 +173,23 @@ const Home = () => {
                           : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
                     </div>
                   </div>
-                  <div><strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}</div>
+                  <div>
+                    <strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}
+                  </div>
+                  {session.comments && (
+                    <div><strong>Comentario:</strong> {session.comments}</div>
+                  )}
                 </div>
-                <div>
-                  <button 
-                    className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle" 
-                    disabled={session.status === 'COMPLETED'}
-                    onClick={handleOpenModal}
-                  >
-                    <HiDotsVertical />
-                  </button>
-                </div>
+                {session.status !== 'COMPLETED' && (
+                  <div>
+                    <button 
+                      className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle" 
+                      onClick={handleOpenModal}
+                    >
+                      <HiDotsVertical />
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           ) : (
