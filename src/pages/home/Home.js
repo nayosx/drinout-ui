@@ -126,91 +126,118 @@ const Home = () => {
   };
 
   return (
-    <div className="home-container u-w-100">
-        {currentUser && (
-          <h2 className="welcome-message">¡Bienvenido, {currentUser.name}!</h2>
-        )}
+    <div className="container u-mt-4 u-mb-8">
 
-        <h1>Jornada Laboral</h1>
-        <p>Administra tu jornada de trabajo.</p>
-
-        {loading ? (
-          <p>Cargando...</p>
-        ) : (
-          <div className="session-actions">
-            {activeSession ? (
-              <button type="button" className="u-btn u-btn-secondary-red-20" onClick={handleEndSession}>
-                Finalizar Jornada
-              </button>
-            ) : (
-              <button className="u-btn u-btn-secondary-green" onClick={handleStartSession}>
-                Iniciar Jornada
-              </button>
-            )}
+      {loading ? (
+        <div className='row'>
+          <div className='col-12'>
+            <p>Cargando...</p>
           </div>
-        )}
-
-        <hr className="grey-v1" />
-        <h2 className='u-mb-2'>Historial de Jornadas Laborales</h2>
-
-        <div className="u-mb-2">
-          {workSessions.length > 0 ? (
-            workSessions.map((session, index) => (
-              <div key={session.id} className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'}`}>
-                <div className='u-d-flex u-d-flex-column u-d-flex-gap-2 u-w-100'>
-                  <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-4'>
-                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
-                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {transformDate(session.login_time)}</div>
-                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Inicio:</strong> {transformDate(session.login_time, true)}</div>
-                    </div>
-                    <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
-                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {session.logout_time
-                            ? transformDate(session.logout_time)
-                            : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
-                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong className='u-mr-2'>Fin:</strong>
-                          {session.logout_time
-                          ? transformDate(session.logout_time, true)
-                          : <GrInProgress className="u-icon-x12 u-text-cyan-20" /> }</div>
-                    </div>
-                  </div>
-                  <div>
-                    <strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}
-                  </div>
-                  {session.comments && (
-                    <div><strong>Comentario:</strong> {session.comments}</div>
-                  )}
-                </div>
-                {session.status !== 'COMPLETED' && (
-                  <div>
-                    <button 
-                      className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle" 
-                      onClick={handleOpenModal}
-                    >
-                      <HiDotsVertical />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <p>No hay registros de jornadas laborales.</p>
-          )}
         </div>
 
-        <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <textarea 
-            className="u-w-100 u-mb-2" 
-            rows="4" 
-            placeholder="Escribe tu comentario..." 
-            value={comment} 
-            onChange={(e) => setComment(e.target.value)}
-          ></textarea>
-          <div className="u-d-flex u-d-flex-justify-end u-d-flex-gap-2">
-            <button className="u-btn u-btn-secondary-red-20" onClick={handleCloseModal}>Cancelar</button>
-            <button className="u-btn u-btn-secondary-green" onClick={handleSubmit}>Enviar</button>
+      ) : (
+        <>
+          <div className='row'>
+            <div className='col-12'>
+
+
+              {currentUser && (
+                <h2 className="welcome-message u-mb-2">¡Bienvenido, {currentUser.name}!</h2>
+              )}
+
+            </div>
           </div>
-        </Modal>
-      </div>
+
+          <div className='row'>
+            <div className='col-12 col-md-10 u-d-flex u-d-flex-justify-start u-d-flex-align-center'>
+              <h2>Historial de Jornadas Laborales</h2>
+            </div>
+
+            <div className='col-12 col-md-2'>
+              <div>
+                {activeSession ? (
+                  <button type="button" className="u-btn u-btn--large u-btn-secondary-red-20" onClick={handleEndSession}>
+                    Finalizar Jornada
+                  </button>
+                ) : (
+                  <button className="u-btn u-btn--large u-btn-secondary-green" onClick={handleStartSession}>
+                    Iniciar Jornada
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className='row'>
+            <div className='col-12'>
+              <hr className="grey-v1" />
+            </div>
+          </div>
+
+          <div className='row'>
+            <div className='col-12 col-md-6 col-lg-4'>
+              {workSessions.length > 0 ? (
+                workSessions.map((session, index) => (
+                  <div key={session.id} className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'}`}>
+                    <div className='u-d-flex u-d-flex-column u-d-flex-gap-2 u-w-100'>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-4'>
+                        <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {transformDate(session.login_time)}</div>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Inicio:</strong> {transformDate(session.login_time, true)}</div>
+                        </div>
+                        <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {session.logout_time
+                            ? transformDate(session.logout_time)
+                            : <GrInProgress className="u-icon-x12 u-text-cyan-20" />}</div>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong className='u-mr-2'>Fin:</strong>
+                            {session.logout_time
+                              ? transformDate(session.logout_time, true)
+                              : <GrInProgress className="u-icon-x12 u-text-cyan-20" />}</div>
+                        </div>
+                      </div>
+                      <div>
+                        <strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}
+                      </div>
+                      {session.comments && (
+                        <div><strong>Comentario:</strong> {session.comments}</div>
+                      )}
+                    </div>
+                    {session.status !== 'COMPLETED' && (
+                      <div>
+                        <button
+                          className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle"
+                          onClick={handleOpenModal}
+                        >
+                          <HiDotsVertical />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p>No hay registros de jornadas laborales.</p>
+              )}
+            </div>
+
+          </div>
+        </>
+      )}
+
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} showCloseButton={false}>
+        <h3 className='u-mb-1'>Comentario para finalización de jornada</h3>
+        <textarea
+          className="u-w-100 u-mb-2"
+          rows="4"
+          placeholder="Escribe tu comentario..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        ></textarea>
+        <div className="u-d-flex u-d-flex-justify-center u-d-flex-gap-2">
+          <button className="u-btn u-btn-grey-30" onClick={handleCloseModal}>Cancelar</button>
+          <button className="u-btn u-btn-secondary-green" onClick={handleSubmit}>Enviar</button>
+        </div>
+      </Modal>
+    </div>
   );
 };
 
