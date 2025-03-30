@@ -10,6 +10,7 @@ import NotFound from './pages/NotFound';
 import SimpleLayout from './layouts/Simple.layout';
 import MainLayout from './layouts/Main.layout';
 import useNavbarStore from './store/useNavbarStore';
+import WorkSessionReport from './pages/workSession/action/report';
 
 const isAuthenticated = () => !!sessionStorage.getItem('authToken');
 
@@ -24,11 +25,11 @@ function App() {
     <Router>
       <Routes>
 
-        <Route path={routes.login} element={<SimpleLayout><Login /></SimpleLayout>} />
-        <Route path={routes.notFound} element={<SimpleLayout><NotFound /></SimpleLayout>} />
+        <Route path={routes.login.path} element={<SimpleLayout><Login /></SimpleLayout>} />
+        <Route path={routes.notFound.path} element={<SimpleLayout><NotFound /></SimpleLayout>} />
 
         <Route 
-          path={routes.home} 
+          path={routes.home.path} 
           element={
             <ProtectedRoute>
               <MainLayout>
@@ -39,7 +40,7 @@ function App() {
         />
         
         <Route 
-          path={routes.me} 
+          path={routes.me.path} 
           element={
             <ProtectedRoute>
               <MainLayout>
@@ -50,7 +51,7 @@ function App() {
         />
         
         <Route 
-          path={routes.transaction.list} 
+          path={routes.transaction.list.path} 
           element={
             <ProtectedRoute>
               <MainLayout>
@@ -61,7 +62,7 @@ function App() {
         />
         
         <Route 
-          path={routes.transaction.add} 
+          path={routes.transaction.add.path} 
           element={
             <ProtectedRoute>
               <MainLayout>
@@ -70,6 +71,29 @@ function App() {
             </ProtectedRoute>
           } 
         />
+
+        <Route 
+          path={routes.workSession.home.path} 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <WorkSessionReport setTitle={setTitle} />
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path={routes.workSession.report.path} 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <WorkSessionReport setTitle={setTitle} />
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+
       </Routes>
     </Router>
   );

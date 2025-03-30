@@ -59,3 +59,37 @@ export const forceEndWorkSession = async (userId, comments) => {
     throw error;
   }
 };
+
+
+export const getWorkSessionsReport = async (startDate, endDate, downloadCsv = false) => {
+  try {
+    const params = {
+      start_date: startDate,
+      end_date: endDate,
+      download_csv: downloadCsv
+    };
+
+    const response = await axiosInstance.get('/work_sessions/report', {
+      params,
+      responseType: downloadCsv ? 'blob' : 'json'
+    });
+
+    if (downloadCsv) {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `reporte_${startDate}_a_${endDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return { success: true };
+    }
+
+    return response.data;
+
+  } catch (error) {
+    console.error('Error fetching work sessions report:', error);
+    throw error;
+  }
+};

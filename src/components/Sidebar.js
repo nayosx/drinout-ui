@@ -25,40 +25,52 @@ const Sidebar = () => {
     };
   }, [isOpen, toggleSidebar]);
 
+  const renderMenuItems = (routesObj) => {
+    return Object.entries(routesObj).map(([key, value]) => {
+      if (
+        typeof value === 'object' &&
+        'path' in value &&
+        'label' in value &&
+        value.showInSidebar
+      ) {
+        return (
+          <li key={key}>
+            <a
+              className="u-btn u-btn--large u-btn--text-left"
+              href={value.path}
+            >
+              {value.label}
+            </a>
+          </li>
+        );
+      } else if (typeof value === 'object') {
+        // Subrutas anidadas
+        return renderMenuItems(value);
+      } else {
+        return null;
+      }
+    });
+  };
+  
+
   return (
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
-      <div ref={sidebarRef} className="l-panel__sidebar u-bg-white sidebar u-p-all-none">
-        
+      <div
+        ref={sidebarRef}
+        className="l-panel__sidebar u-bg-white sidebar u-p-all-none"
+      >
         <nav className="sidebar-menu">
           <ul>
-            <li className='u-text-right'>
-              <button 
-                type='button' 
-                className="close-btn u-mr-1" 
-                onClick={() => toggleSidebar(false)}>
+            <li className="u-text-right">
+              <button
+                type="button"
+                className="close-btn u-mr-1"
+                onClick={() => toggleSidebar(false)}
+              >
                 <IoClose size={24} />
               </button>
             </li>
-            <li>
-              <a className='u-btn u-btn--large u-btn--text-left' href={routes.home}>
-                Inicio
-              </a>
-            </li>
-            <li>
-              <a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.list}>
-                Transacciones
-              </a>
-            </li>
-            <li>
-              <a className='u-btn u-btn--large u-btn--text-left' href={routes.transaction.add}>
-                Agregar pago
-              </a>
-            </li>
-            <li>
-              <a className='u-btn u-btn--large u-btn--text-left' href={routes.me}>
-                Mis datos
-              </a>
-            </li>
+            {renderMenuItems(routes)}
           </ul>
         </nav>
       </div>
