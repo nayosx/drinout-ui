@@ -1,94 +1,245 @@
-import React, { useState } from 'react';
-import { getWorkSessionsReport } from '../../api/workSessions';
+import React, { useEffect, useState, useCallback } from 'react';
+import { startWorkSession, forceEndWorkSession, getWorkSessions, endWorkSession } from '../../api/workSessions';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import duration from 'dayjs/plugin/duration';
+import { GrInProgress } from 'react-icons/gr';
+import 'dayjs/locale/es';
+import useAppStore from '../../store/useAppStore';
+import { HiDotsVertical } from "react-icons/hi";
+import Modal from '../../components/Modal';
+import Loader from '../../components/Loader';
 
-const WorkSessionReport = () => {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [reportData, setReportData] = useState([]);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(duration);
+dayjs.locale('es');
 
-  const handleFetchJson = async () => {
+const SALVADOR_TIMEZONE = 'America/El_Salvador';
+
+const HomeWorkSession = () => {
+  const [activeSession, setActiveSession] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [currentUser] = useState(() => {
+    const userData = sessionStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  });
+  const [workSessions, setWorkSessions] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comment, setComment] = useState('');
+  const setTitle = useAppStore((state) => state.setTitle);
+
+  const fetchWorkSessions = useCallback(async (userId) => {
+    if (!userId) return;
+    setLoading(true);
     try {
-      const data = await getWorkSessionsReport(startDate, endDate);
-      setReportData(data.report);
+      const sessions = await getWorkSessions(userId);
+      const lastSession = sessions.find(session => session.status !== 'COMPLETED');
+
+      if (lastSession) {
+        setActiveSession(lastSession);
+      } else {
+        setActiveSession(null);
+      }
+
+      setWorkSessions(sessions);
     } catch (error) {
-      alert('Error al obtener el reporte JSON');
-      console.error(error);
+      console.error('Error fetching work sessions list:', error);
+      setActiveSession(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    setTitle('DayLog');
+    if (!currentUser) return;
+    fetchWorkSessions(currentUser.id);
+  }, [setTitle, currentUser, fetchWorkSessions]);
+
+  const calculateWorkDuration = (loginTime, logoutTime) => {
+    if (!loginTime) return '0h 0m';
+
+    const login = dayjs.utc(loginTime).tz(SALVADOR_TIMEZONE, true);
+    const logout = logoutTime ? dayjs.utc(logoutTime).tz(SALVADOR_TIMEZONE, true) : dayjs();
+
+    const workedDuration = dayjs.duration(logout.diff(login));
+    return `${Math.floor(workedDuration.asHours())}h ${workedDuration.minutes()}m`;
+  };
+
+  const handleStartSession = async () => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    try {
+      const response = await startWorkSession();
+      setActiveSession(response.session);
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
+    } catch (error) {
+      console.error('Error starting work session:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDownloadCsv = async () => {
+  const handleEndSession = async () => {
+    setLoading(true);
     try {
-      await getWorkSessionsReport(startDate, endDate, true);
+      await endWorkSession();
+      setActiveSession(null);
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
     } catch (error) {
-      alert('Error al descargar el CSV');
-      console.error(error);
+      console.error('Error ending work session:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleForceEndSession = async (comments) => {
+    setLoading(true);
+    try {
+      await forceEndWorkSession(currentUser.id, comments);
+      setActiveSession(null);
+      setTimeout(() => fetchWorkSessions(currentUser.id), 500);
+    } catch (error) {
+      console.error('Error forcing end of work session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const transformDate = (date, isTime = false) => {
+    return dayjs.utc(date).tz(SALVADOR_TIMEZONE, true).format(isTime ? 'hh:mm A' : 'DD MMM YYYY');
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = () => {
+    handleForceEndSession(comment);
+    handleCloseModal();
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Reporte de Sesiones de Trabajo</h2>
+    <div className="container u-mt-4 u-mb-8">
 
-      <div className="flex gap-2 mb-4">
-        <input
-          type="date"
-          className="border p-2 rounded w-full"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        <input
-          type="date"
-          className="border p-2 rounded w-full"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-      </div>
+      {loading ? (
+        <div className='row'>
+          <div className='col-12 u-d-flex u-d-flex-justify-center u-d-flex-align-center'>
+            <Loader />
+          </div>
+        </div>
 
-      <div className="flex gap-2 mb-4">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={handleFetchJson}
-        >
-          Consultar JSON
-        </button>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded"
-          onClick={handleDownloadCsv}
-        >
-          Descargar CSV
-        </button>
-      </div>
+      ) : (
+        <>
+          <div className='row'>
+            <div className='col-12'>
 
-      <div>
-        {reportData.length > 0 && (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="border p-2">User ID</th>
-                <th className="border p-2">Nombre</th>
-                <th className="border p-2">Sesiones</th>
-                <th className="border p-2">Duración Total</th>
-                <th className="border p-2">Extra</th>
-                <th className="border p-2">Faltante</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportData.map((session) => (
-                <tr key={session.user_id}>
-                  <td className="border p-2">{session.user_id}</td>
-                  <td className="border p-2">{session.nombre_usuario}</td>
-                  <td className="border p-2">{session.total_sesiones}</td>
-                  <td className="border p-2">{session.total_duracion}</td>
-                  <td className="border p-2">{session.total_extra}</td>
-                  <td className="border p-2">{session.total_faltante}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+
+              {currentUser && (
+                <h2 className="welcome-message u-mb-2">¡Bienvenido, {currentUser.name}!</h2>
+              )}
+
+            </div>
+          </div>
+
+          <div className='row'>
+            <div className='col-12 col-md-10 u-d-flex u-d-flex-justify-start u-d-flex-align-center'>
+              <h2>Historial de Jornadas Laborales</h2>
+            </div>
+
+            <div className='col-12 col-md-2'>
+              <div>
+                {activeSession ? (
+                  <button type="button" className="u-btn u-btn--large u-btn-secondary-red-20" onClick={handleEndSession}>
+                    Finalizar Jornada
+                  </button>
+                ) : (
+                  <button className="u-btn u-btn--large u-btn-secondary-green" onClick={handleStartSession}>
+                    Iniciar Jornada
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className='row'>
+            <div className='col-12'>
+              <hr className="grey-v1" />
+            </div>
+          </div>
+
+          <div className='row'>
+            <div className='col-12 col-md-6 col-lg-4'>
+              {workSessions.length > 0 ? (
+                workSessions.map((session, index) => (
+                  <div key={session.id} className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'}`}>
+                    <div className='u-d-flex u-d-flex-column u-d-flex-gap-2 u-w-100'>
+                      <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-4'>
+                        <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {transformDate(session.login_time)}</div>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Inicio:</strong> {transformDate(session.login_time, true)}</div>
+                        </div>
+                        <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong>Fecha:</strong> {session.logout_time
+                            ? transformDate(session.logout_time)
+                            : <GrInProgress className="u-icon-x12 u-text-cyan-20" />}</div>
+                          <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'><strong className='u-mr-2'>Fin:</strong>
+                            {session.logout_time
+                              ? transformDate(session.logout_time, true)
+                              : <GrInProgress className="u-icon-x12 u-text-cyan-20" />}</div>
+                        </div>
+                      </div>
+                      <div>
+                        <strong>Tiempo Laborado:</strong> {calculateWorkDuration(session.login_time, session.logout_time)}
+                      </div>
+                      {session.comments && (
+                        <div><strong>Comentario:</strong> {session.comments}</div>
+                      )}
+                    </div>
+                    {session.status !== 'COMPLETED' && (
+                      <div>
+                        <button
+                          className="u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle"
+                          onClick={handleOpenModal}
+                        >
+                          <HiDotsVertical />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p>No hay registros de jornadas laborales.</p>
+              )}
+            </div>
+
+          </div>
+        </>
+      )}
+
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} showCloseButton={false}>
+        <h3 className='u-mb-1'>Comentario para finalización de jornada</h3>
+        <textarea
+          className="u-w-100 u-mb-2"
+          rows="4"
+          placeholder="Escribe tu comentario..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        ></textarea>
+        <div className="u-d-flex u-d-flex-justify-center u-d-flex-gap-2">
+          <button className="u-btn u-btn-grey-30" onClick={handleCloseModal}>Cancelar</button>
+          <button className="u-btn u-btn-secondary-green" onClick={handleSubmit}>Enviar</button>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-export default WorkSessionReport;
+export default HomeWorkSession;

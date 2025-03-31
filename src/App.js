@@ -11,6 +11,7 @@ import SimpleLayout from './layouts/Simple.layout';
 import MainLayout from './layouts/Main.layout';
 import useNavbarStore from './store/useNavbarStore';
 import WorkSessionReport from './pages/workSession/action/report';
+import HomeWorkSession from './pages/workSession/Home';
 
 const isAuthenticated = () => !!sessionStorage.getItem('authToken');
 
@@ -77,7 +78,7 @@ function App() {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <WorkSessionReport setTitle={setTitle} />
+                <HomeWorkSession setTitle={setTitle} />
               </MainLayout>
             </ProtectedRoute>
           } 

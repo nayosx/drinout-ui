@@ -1,8 +1,15 @@
 import axiosInstance from './apiClient';
+import dayjs from 'dayjs';
+
 
 export const getWorkSessions = async (userId = null) => {
   try {
-    const params = userId ? { user_id: userId } : {};
+
+    const params = { 
+      user_id: (userId) ? userId : null, 
+      start_date: dayjs().startOf('month').format('YYYY-MM-DD'), 
+      end_date: dayjs().endOf('month').format('YYYY-MM-DD') 
+    };
     const response = await axiosInstance.get('/work_sessions', { params });
     return response.data;
   } catch (error) {
@@ -40,8 +47,6 @@ export const endWorkSession = async () => {
     throw error;
   }
 };
-
-  
 
 export const forceEndWorkSession = async (userId, comments) => {
   try {

@@ -7,12 +7,12 @@ const routes = {
   me: {
     label: 'Perfil',
     path: '/me',
-    showInSidebar: true
+    showInSidebar: false
   },
   home: {
     label: 'Inicio',
     path: '/home',
-    showInSidebar: true
+    showInSidebar: false
   },
   notFound: {
     label: 'No encontrado',
@@ -23,12 +23,12 @@ const routes = {
     list: {
       label: 'Lista de Transacciones',
       path: '/transactions',
-      showInSidebar: true
+      showInSidebar: false
     },
     add: {
       label: 'Agregar Transacción',
       path: '/transactions/add',
-      showInSidebar: true
+      showInSidebar: false
     },
     edit: {
       label: 'Editar Transacción',
