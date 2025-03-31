@@ -38,14 +38,14 @@ const routes = {
   },
   workSession: {
     home: {
-      label: 'Sesiones de Trabajo',
+      label: 'Daylog',
       path: '/work-session',
       showInSidebar: true
     },
     report: {
       label: 'Reporte de Trabajo',
       path: '/work-session/report',
-      showInSidebar: true
+      showInSidebar: false
     }
   }
 };
