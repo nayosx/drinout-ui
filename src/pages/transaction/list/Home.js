@@ -4,6 +4,9 @@ import DOMPurify from 'dompurify';
 import './Home.scss';
 import Loader from '../../../components/Loader';
 import { useNavigate } from 'react-router-dom';
+import { BsPiggyBank } from 'react-icons/bs';
+import { HiOutlineBanknotes } from 'react-icons/hi2';
+import { RiBankCardLine } from 'react-icons/ri';
 
 export const HomeTransaction = () => {
   const [transactions, setTransactions] = useState([]);
@@ -87,6 +90,22 @@ export const HomeTransaction = () => {
     navigate(`/transactions/edit/${id}`);
   };
 
+  const renderPaymentIcon = (paymentTypeName) => {
+    console.log('Payment type name:', paymentTypeName);
+    const lowerType = paymentTypeName?.trim().toLowerCase();
+  
+    if (lowerType === 'transferencia') {
+      return <BsPiggyBank size={14} />;
+    }
+    if (lowerType === 'efectivo') {
+      return <HiOutlineBanknotes size={14} />;
+    }
+    if (lowerType === 'tarjeta de credito') {
+      return <RiBankCardLine size={14} />;
+    }
+    return null;
+  };
+
   return (
     <div className='container u-mt-4 u-mb-8'>
       <div className='row'>
@@ -141,8 +160,6 @@ export const HomeTransaction = () => {
                 <tr>
                   <th>ID</th>
                   <th>Usuario</th>
-                  <th>Tipo de Transacción</th>
-                  <th>Tipo de Pago</th>
                   <th>Detalle</th>
                   <th>Monto</th>
                   <th>Fecha</th>
@@ -155,20 +172,6 @@ export const HomeTransaction = () => {
                     <tr key={transaction.id}>
                       <td>{index + 1}</td>
                       <td>{transaction.user_name}</td>
-                      <td>
-                        <span
-                          className={
-                            transaction.transaction_type === 'IN'
-                              ? 'u-bg-green-20 u-text-white u-pl-1 u-pr-1'
-                              : transaction.transaction_type === 'OUT'
-                              ? 'u-bg-red-20 u-text-white u-pl-1 u-pr-1'
-                              : ''
-                          }
-                        >
-                          {transaction.transaction_type}
-                        </span>
-                      </td>
-                      <td>{transaction.payment_type_name}</td>
                       <td>
                         {expandedDetails[transaction.id] ? (
                           <div
@@ -188,7 +191,30 @@ export const HomeTransaction = () => {
                             : 'Ver más'}
                         </button>
                       </td>
-                      <td>${transaction.amount}</td>
+                      <td>
+                        <div>
+                          <div>
+                            <span className={transaction.transaction_type === 'OUT' ? 'u-text-red-30' : 'u-text-green-30'}>
+                            {transaction.transaction_type === 'OUT' ? '-' : ''}${transaction.amount}
+                            </span>
+                          </div>
+                          <div className='u-d-flex-inline u-d-flex-row u-d-flex-gap-2'>
+
+                            {renderPaymentIcon(transaction.payment_type_name)} 
+
+                            <span
+                              className={
+                                transaction.transaction_type === 'IN'
+                                  ? 'u-bg-green-20 u-text-white u-pl-2 u-pr-2'
+                                  :  'u-bg-red-20 u-text-white u-pl-1 u-pr-1'
+                              }
+                            >
+                              {transaction.transaction_type}
+                            </span>
+                          </div>
+                        </div>
+                        
+                      </td>
                       <td>
                         {new Date(transaction.created_at).toLocaleDateString()}
                       </td>
@@ -204,7 +230,7 @@ export const HomeTransaction = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan='8'>No se encontraron transacciones.</td>
+                    <td colSpan='7'>No se encontraron transacciones.</td>
                   </tr>
                 )}
               </tbody>
