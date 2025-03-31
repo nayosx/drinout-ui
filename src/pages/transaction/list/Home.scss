@@ -1,156 +1,137 @@
-.home-container {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    color: #333;
-  
-    .home-title {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      color: #007bff;
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+
+    label {
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #555;
     }
-  
-    .filter-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 20px;
-  
-      div {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-width: 150px;
-  
-        label {
-          font-size: 0.9rem;
-          font-weight: bold;
-          margin-bottom: 5px;
-          color: #555;
-        }
-  
-        input[type="date"],
-        input[type="text"],
-        input[type="number"] {
-          padding: 8px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 5px;
-          outline: none;
-  
-          &:focus {
-            border-color: #007bff;
-          }
-        }
-      }
-  
-      .filter-buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-  
-        button {
-          padding: 8px 12px;
-          font-size: 0.9rem;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-  
-          &:hover {
-            opacity: 0.9;
-          }
-  
-          &:disabled {
-            cursor: not-allowed;
-            background-color: #ccc;
-          }
-  
-          &:nth-child(1) {
-            background-color: #007bff;
-            color: white;
-  
-            &:hover {
-              background-color: #0056b3;
-            }
-          }
-  
-          &:nth-child(2) {
-            background-color: #6c757d;
-            color: white;
-  
-            &:hover {
-              background-color: #5a6268;
-            }
-          }
-  
-          &:nth-child(3) {
-            background-color: #28a745;
-            color: white;
-  
-            &:hover {
-              background-color: #218838;
-            }
-          }
-        }
-      }
-    }
-  
-    .transactions-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-  
-      thead {
-        background-color: #f8f9fa;
-  
-        th {
-          padding: 10px;
-          text-align: left;
-          font-size: 0.9rem;
-          color: #555;
-          border-bottom: 2px solid #dee2e6;
-        }
-      }
-  
-      tbody {
-        tr {
-          border-bottom: 1px solid #dee2e6;
-  
-          &:hover {
-            background-color: #f1f1f1;
-          }
-  
-          td {
-            padding: 10px;
-            font-size: 0.9rem;
-            color: #333;
-  
-            &:nth-child(5) {
-              max-width: 300px;
-              word-wrap: break-word;
-            }
-  
-            button.btn-view-more {
-              background: none;
-              border: none;
-              color: #007bff;
-              cursor: pointer;
-              font-size: 0.9rem;
-              text-decoration: underline;
-  
-              &:hover {
-                color: #0056b3;
-              }
-            }
-          }
-        }
-      }
-    }
-  
-    p {
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"] {
+      padding: 8px;
       font-size: 1rem;
-      margin-top: 10px;
-      color: #777;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+
+      &:focus {
+        border-color: #007bff;
+      }
     }
   }
-  
+
+  .filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+
+    button {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        opacity: 0.9;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        background-color: #ccc;
+      }
+
+      &:nth-child(1) {
+        background-color: #007bff;
+        color: white;
+
+        &:hover {
+          background-color: #0056b3;
+        }
+      }
+
+      &:nth-child(2) {
+        background-color: #6c757d;
+        color: white;
+
+        &:hover {
+          background-color: #5a6268;
+        }
+      }
+
+      &:nth-child(3) {
+        background-color: #28a745;
+        color: white;
+
+        &:hover {
+          background-color: #218838;
+        }
+      }
+    }
+  }
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  thead {
+    background-color: #f8f9fa;
+
+    th {
+      padding: 10px;
+      text-align: left;
+      font-size: 0.9rem;
+      color: #555;
+      border-bottom: 2px solid #dee2e6;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #dee2e6;
+
+      &:hover {
+        background-color: #f1f1f1;
+      }
+
+      td {
+        padding: 10px;
+        font-size: 0.9rem;
+        color: #333;
+
+        &:nth-child(5) {
+          max-width: 300px;
+          word-wrap: break-word;
+        }
+
+        button.btn-view-more {
+          background: none;
+          border: none;
+          color: #007bff;
+          cursor: pointer;
+          font-size: 0.9rem;
+          text-decoration: underline;
+
+          &:hover {
+            color: #0056b3;
+          }
+        }
+      }
+    }
+  }
+}

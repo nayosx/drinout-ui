@@ -23,12 +23,12 @@ const routes = {
     list: {
       label: 'Lista de Transacciones',
       path: '/transactions',
-      showInSidebar: false
+      showInSidebar: true
     },
     add: {
       label: 'Agregar Transacción',
       path: '/transactions/add',
-      showInSidebar: false
+      showInSidebar: true
     },
     edit: {
       label: 'Editar Transacción',
