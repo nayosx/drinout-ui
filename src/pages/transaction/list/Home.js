@@ -3,6 +3,7 @@ import { getTransactions } from '../../../api/transaction';
 import DOMPurify from 'dompurify';
 import './Home.scss';
 import Loader from '../../../components/Loader';
+import { useNavigate } from 'react-router-dom';
 
 export const HomeTransaction = () => {
   const [transactions, setTransactions] = useState([]);
@@ -14,6 +15,7 @@ export const HomeTransaction = () => {
   const [expandedDetails, setExpandedDetails] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userData = sessionStorage.getItem('user');
@@ -81,6 +83,10 @@ export const HomeTransaction = () => {
     }));
   };
 
+  const handleEdit = (id) => {
+    navigate(`/transactions/edit/${id}`);
+  };
+
   return (
     <div className='container u-mt-4 u-mb-8'>
       <div className='row'>
@@ -140,6 +146,7 @@ export const HomeTransaction = () => {
                   <th>Detalle</th>
                   <th>Monto</th>
                   <th>Fecha</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,11 +192,19 @@ export const HomeTransaction = () => {
                       <td>
                         {new Date(transaction.created_at).toLocaleDateString()}
                       </td>
+                      <td>
+                        <button
+                          className='btn btn-secondary'
+                          onClick={() => handleEdit(transaction.id)}
+                        >
+                          Editar
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan='7'>No se encontraron transacciones.</td>
+                    <td colSpan='8'>No se encontraron transacciones.</td>
                   </tr>
                 )}
               </tbody>
@@ -200,3 +215,5 @@ export const HomeTransaction = () => {
     </div>
   );
 };
+
+export default HomeTransaction;

@@ -13,6 +13,17 @@ export const getTransactions = async (queryParams = {}) => {
   }
 };
 
+export const getTransaction = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/transactions/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transaction:', error);
+    throw error;
+  }
+};
+
+
 export const createTransaction = async (transactionData) => {
     try {
       const response = await axiosInstance.post('/transactions', transactionData);

@@ -12,6 +12,7 @@ import MainLayout from './layouts/Main.layout';
 import useNavbarStore from './store/useNavbarStore';
 import WorkSessionReport from './pages/workSession/action/report';
 import HomeWorkSession from './pages/workSession/Home';
+import EditTransaction from './pages/transaction/action/edit/Edit';
 
 const isAuthenticated = () => !!sessionStorage.getItem('authToken');
 
@@ -68,6 +69,17 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <AddTransaction setTitle={setTitle} />
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path={routes.transaction.edit.path} 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <EditTransaction setTitle={setTitle} />
               </MainLayout>
             </ProtectedRoute>
           } 
