@@ -21,3 +21,10 @@ export const logout = () => {
   sessionStorage.clear();
   window.location.href = '/';
 };
+
+
+const authService = {
+  logout: () => {},
+};
+
+export default authService;
