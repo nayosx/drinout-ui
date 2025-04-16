@@ -28,9 +28,13 @@ const Login = () => {
 
     return (
         <div className='container-login u-bg-white'>
+
             <div className='container-form'>
                 <div className='u-d-flex u-d-flex-column u-d-flex-gap-3 u-card u-card--shadow u-bg-white-pure'>
                     <div className='u-card__content'>
+                    <div className='u-text-center u-mt-3 u-text-muted'>
+                        <small>Versión {process.env.REACT_APP_VERSION}</small>
+                    </div>
                         <h1 className='u-text-center'>DrClin</h1>
                         <div className='u-text-center'>
                             <img src={logo} alt="DrClin Logo" className='logo' />
@@ -45,6 +49,7 @@ const Login = () => {
                             onSubmit={handleSubmit}
                         >
                             {({ isSubmitting, isValid, dirty }) => (
+                                
                                 <Form className='form' autoComplete="off">
                                     <div>
                                         <div className='u-d-flex u-d-flex-gap-2 u-d-flex-align-center u-d-flex-justify-flex-start u-mb-1'>
