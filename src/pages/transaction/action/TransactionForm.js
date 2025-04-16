@@ -1,8 +1,8 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import ReactQuill from 'react-quill-new';
 import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa';
 import validationSchema from './AddEdit.validate';
+import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './TransactionForm.scss';
 

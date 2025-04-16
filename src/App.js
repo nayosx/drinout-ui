@@ -15,6 +15,7 @@ import HomeWorkSession from './pages/workSession/Home';
 import EditTransaction from './pages/transaction/action/edit/Edit';
 import { AuthProvider } from './AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import HomeTask from './pages/task/Home';
 
 function App() {
   const setTitle = useNavbarStore((state) => state.setTitle);
@@ -102,6 +103,20 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+
+          <Route 
+            path={routes.task.home.path} 
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <HomeTask setTitle={setTitle} />
+                </MainLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+
         </Routes>
       </AuthProvider>
     </Router>

@@ -6,9 +6,8 @@ import {
   endWorkSession,
   getWorkSessionLastest,
 } from '../../api/workSessions';
+import { createTask } from '../../api/task';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import duration from 'dayjs/plugin/duration';
 import { GrInProgress } from 'react-icons/gr';
 import 'dayjs/locale/es';
@@ -16,18 +15,15 @@ import useAppStore from '../../store/useAppStore';
 import { HiDotsVertical } from 'react-icons/hi';
 import Modal from '../../components/Modal';
 import Loader from '../../components/Loader';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 dayjs.extend(duration);
 dayjs.locale('es');
-
-const SALVADOR_TIMEZONE = 'America/El_Salvador';
 
 const HomeWorkSession = () => {
   const [latestSession, setLatestSession] = useState(null);
   const [latestSessionLoading, setLatestSessionLoading] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [currentUser] = useState(() => {
     const userData = sessionStorage.getItem('user');
@@ -36,6 +32,11 @@ const HomeWorkSession = () => {
   const [workSessions, setWorkSessions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comment, setComment] = useState('');
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [quillContent, setQuillContent] = useState('');
+  const [isSavingTask, setIsSavingTask] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const setTitle = useAppStore((state) => state.setTitle);
 
   const fetchLatestSession = useCallback(async () => {
@@ -43,16 +44,12 @@ const HomeWorkSession = () => {
     setLatestSessionLoading(true);
     try {
       const data = await getWorkSessionLastest();
-      if (data.session) {
-        if(data.session.status === 'COMPLETED') {
-          setLatestSession(null);
-        } else {
-          setLatestSession(data.session);
-        }
+      if (data.session && data.session.status !== 'COMPLETED') {
+        setLatestSession(data.session);
       } else {
         setLatestSession(null);
       }
-    } catch (error) {
+    } catch {
       setLatestSession(null);
     } finally {
       setLatestSessionLoading(false);
@@ -65,8 +62,7 @@ const HomeWorkSession = () => {
     try {
       const sessions = await getWorkSessions(userId);
       setWorkSessions(sessions);
-    } catch (error) {
-      console.error('Error fetching work sessions list:', error);
+    } catch {
       setWorkSessions([]);
     } finally {
       setLoading(false);
@@ -82,28 +78,22 @@ const HomeWorkSession = () => {
 
   const calculateWorkDuration = (loginTime, logoutTime) => {
     if (!loginTime) return '0h 0m';
-
-    const login = dayjs.utc(loginTime).tz(SALVADOR_TIMEZONE, true);
-    const logout = logoutTime
-      ? dayjs.utc(logoutTime).tz(SALVADOR_TIMEZONE, true)
-      : dayjs();
-
+    const login = dayjs(loginTime);
+    const logout = logoutTime ? dayjs(logoutTime) : dayjs();
     const workedDuration = dayjs.duration(logout.diff(login));
-    return `${Math.floor(
-      workedDuration.asHours()
-    )}h ${workedDuration.minutes()}m`;
+    return `${Math.floor(workedDuration.asHours())}h ${workedDuration.minutes()}m`;
   };
+
+  const transformDate = (date, isTime = false) =>
+    dayjs(date).format(isTime ? 'hh:mm A' : 'DD MMM YYYY');
 
   const handleStartSession = async () => {
     if (!currentUser) return;
-
     setLoading(true);
     try {
       const response = await startWorkSession();
       setLatestSession(response.session);
       setTimeout(() => fetchWorkSessions(currentUser.id), 500);
-    } catch (error) {
-      console.error('Error starting work session:', error);
     } finally {
       setLoading(false);
     }
@@ -115,8 +105,6 @@ const HomeWorkSession = () => {
       await endWorkSession();
       setLatestSession(null);
       setTimeout(() => fetchWorkSessions(currentUser.id), 500);
-    } catch (error) {
-      console.error('Error ending work session:', error);
     } finally {
       setLoading(false);
     }
@@ -128,31 +116,35 @@ const HomeWorkSession = () => {
       await forceEndWorkSession(currentUser.id, comments);
       setLatestSession(null);
       setTimeout(() => fetchWorkSessions(currentUser.id), 500);
-    } catch (error) {
-      console.error('Error forcing end of work session:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const transformDate = (date, isTime = false) => {
-    return dayjs
-      .utc(date)
-      .tz(SALVADOR_TIMEZONE, true)
-      .format(isTime ? 'hh:mm A' : 'DD MMM YYYY');
-  };
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
   const handleSubmit = () => {
     handleForceEndSession(comment);
     handleCloseModal();
+  };
+
+  const handlePending = async () => {
+    setIsSavingTask(true);
+    try {
+      await createTask({
+        user_id: currentUser.id,
+        description: quillContent,
+        work_session_id: latestSession.id,
+      });
+      setIsConfirmModalOpen(false);
+      setShowEditor(false);
+      setQuillContent('');
+      handleEndSession();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setIsSavingTask(false);
+    }
   };
 
   return (
@@ -167,11 +159,7 @@ const HomeWorkSession = () => {
         <>
           <div className='row'>
             <div className='col-12'>
-              {currentUser && (
-                <h2 className='welcome-message u-mb-2'>
-                  ¡Bienvenido, {currentUser.name}!
-                </h2>
-              )}
+              {currentUser && <h2 className='welcome-message u-mb-2'>¡Bienvenido, {currentUser.name}!</h2>}
             </div>
           </div>
 
@@ -179,30 +167,24 @@ const HomeWorkSession = () => {
             <div className='col-12 col-md-10 u-d-flex u-d-flex-justify-start u-d-flex-align-center'>
               <h2>Historial de Jornadas Laborales</h2>
             </div>
-
             <div className='col-12 col-md-2'>
-              <div>
-                {latestSessionLoading || loading ? (
-                  <button className='u-btn u-btn--large' disabled>
-                    Consultando estado de su sesión...
-                  </button>
-                ) : latestSession ? (
-                  <button
-                    type='button'
-                    className='u-btn u-btn--large u-btn-secondary-red-20'
-                    onClick={handleEndSession}
-                  >
-                    Finalizar Jornada
-                  </button>
-                ) : (
-                  <button
-                    className='u-btn u-btn--large u-btn-secondary-green'
-                    onClick={handleStartSession}
-                  >
-                    Iniciar Jornada
-                  </button>
-                )}
-              </div>
+              {latestSessionLoading || loading ? (
+                <button className='u-btn u-btn--large' disabled>
+                  Consultando estado de su sesión...
+                </button>
+              ) : latestSession ? (
+                <button
+                  type='button'
+                  className='u-btn u-btn--large u-btn-secondary-red-20'
+                  onClick={() => setIsConfirmModalOpen(true)}
+                >
+                  Finalizar Jornada
+                </button>
+              ) : (
+                <button className='u-btn u-btn--large u-btn-secondary-green' onClick={handleStartSession}>
+                  Iniciar Jornada
+                </button>
+              )}
             </div>
           </div>
 
@@ -214,26 +196,22 @@ const HomeWorkSession = () => {
 
           <div className='row'>
             <div className='col-12 col-md-6 col-lg-4'>
-              {workSessions.length > 0 ? (
-                workSessions.map((session, index) => (
+              {workSessions.length ? (
+                workSessions.map((session) => (
                   <div
                     key={session.id}
                     className={`u-card u-card--shadow-sm u-d-flex u-d-flex-justify-between u-d-flex-align-center u-mb-1 ${
-                      session.status === 'COMPLETED'
-                        ? 'u-bg-grey-20'
-                        : 'u-bg-hover-blue'
+                      session.status === 'COMPLETED' ? 'u-bg-grey-20' : 'u-bg-hover-blue'
                     }`}
                   >
                     <div className='u-d-flex u-d-flex-column u-d-flex-gap-2 u-w-100'>
                       <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-4'>
                         <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
                           <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'>
-                            <strong>Fecha:</strong>{' '}
-                            {transformDate(session.login_time)}
+                            <strong>Fecha:</strong> {transformDate(session.login_time)}
                           </div>
                           <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'>
-                            <strong>Inicio:</strong>{' '}
-                            {transformDate(session.login_time, true)}
+                            <strong>Inicio:</strong> {transformDate(session.login_time, true)}
                           </div>
                         </div>
                         <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-column u-d-flex-justify-between u-w-100'>
@@ -246,7 +224,7 @@ const HomeWorkSession = () => {
                             )}
                           </div>
                           <div className='u-d-flex u-d-flex-align-center u-d-flex-gap-2 u-d-flex-row u-d-flex-justify-start u-w-100'>
-                            <strong className='u-mr-2'>Fin:</strong>
+                            <strong className='u-mr-2'>Fin:</strong>{' '}
                             {session.logout_time ? (
                               transformDate(session.logout_time, true)
                             ) : (
@@ -257,10 +235,7 @@ const HomeWorkSession = () => {
                       </div>
                       <div>
                         <strong>Tiempo Laborado:</strong>{' '}
-                        {calculateWorkDuration(
-                          session.login_time,
-                          session.logout_time
-                        )}
+                        {calculateWorkDuration(session.login_time, session.logout_time)}
                       </div>
                       {session.comments && (
                         <div>
@@ -269,14 +244,12 @@ const HomeWorkSession = () => {
                       )}
                     </div>
                     {session.status !== 'COMPLETED' && (
-                      <div>
-                        <button
-                          className='u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle'
-                          onClick={handleOpenModal}
-                        >
-                          <HiDotsVertical />
-                        </button>
-                      </div>
+                      <button
+                        className='u-btn u-btn-secondary-blue u-btn--x32 u-btn--circle'
+                        onClick={handleOpenModal}
+                      >
+                        <HiDotsVertical />
+                      </button>
                     )}
                   </div>
                 ))
@@ -288,11 +261,7 @@ const HomeWorkSession = () => {
         </>
       )}
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        showCloseButton={false}
-      >
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} showCloseButton={false}>
         <h3 className='u-mb-1'>Comentario para finalización de jornada</h3>
         <textarea
           className='u-w-100 u-mb-2'
@@ -300,18 +269,104 @@ const HomeWorkSession = () => {
           placeholder='Escribe tu comentario...'
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-        ></textarea>
+        />
         <div className='u-d-flex u-d-flex-justify-center u-d-flex-gap-2'>
           <button className='u-btn u-btn-grey-30' onClick={handleCloseModal}>
             Cancelar
           </button>
-          <button
-            className='u-btn u-btn-secondary-green'
-            onClick={handleSubmit}
-          >
+          <button className='u-btn u-btn-secondary-green' onClick={handleSubmit}>
             Enviar
           </button>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setShowEditor(false);
+          setQuillContent('');
+          setSaveError(false);
+        }}
+        showCloseButton={false}
+      >
+        {!showEditor ? (
+          <>
+            <h3 className='u-mb-2 u-text-center'>¿Haz dejado pendientes?</h3>
+            <div className='u-d-flex u-d-flex-justify-center u-d-flex-gap-4 u-mt-4'>
+              <button
+                className='u-btn u-btn-grey-30'
+                onClick={() => {
+                  setIsConfirmModalOpen(false);
+                  handleEndSession();
+                }}
+              >
+                No
+              </button>
+              <button className='u-btn u-btn-secondary-green' onClick={() => setShowEditor(true)}>
+                Sí
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className='u-mb-2'>Describe los pendientes</h3>
+            {isSavingTask ? (
+              <div className='u-d-flex u-d-flex-justify-center u-mt-4'>
+                <Loader />
+              </div>
+            ) : (
+              <>
+                <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  <ReactQuill value={quillContent} onChange={setQuillContent} theme='snow' />
+                </div>
+                {!saveError ? (
+                  <div className='u-d-flex u-d-flex-justify-center u-d-flex-gap-4 u-mt-4'>
+                    <button
+                      className='u-btn u-btn-grey-30'
+                      onClick={() => {
+                        setShowEditor(false);
+                        setQuillContent('');
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className='u-btn u-btn-secondary-green'
+                      onClick={ () => handlePending()}
+                    >
+                      Ok
+                    </button>
+                  </div>
+                ) : (
+                  <div className='u-d-flex u-d-flex-column u-d-flex-align-center u-mt-4'>
+                    <p className='u-mb-2 u-text-center u-text-danger'>
+                      Ocurrió un error al guardar la tarea. ¿Deseas reintentar?
+                    </p>
+                    <div className='u-d-flex u-d-flex-justify-center u-d-flex-gap-4'>
+                      <button
+                        className='u-btn u-btn-grey-30'
+                        onClick={() => {
+                          setShowEditor(false);
+                          setQuillContent('');
+                          setSaveError(false);
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        className='u-btn u-btn-secondary-green'
+                        onClick={() => setSaveError(false)}
+                      >
+                        Reintentar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
       </Modal>
     </div>
   );

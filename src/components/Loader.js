@@ -1,4 +1,4 @@
 import './Loader.scss';
-const Loader = () => <div class="spinner"></div>;
+const Loader = () => <div className="spinner"></div>;
 
 export default Loader;

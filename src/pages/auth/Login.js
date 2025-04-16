@@ -16,7 +16,7 @@ const Login = () => {
         setIsLoading(true);
         try {
             await login(values);
-            navigate(routes.workSession.home.path);
+            navigate(routes.task.home.path);
         } catch (error) {
             console.error('Error logging in:', error);
             alert('Usuario o contraseña incorrectos. Intente nuevamente.');

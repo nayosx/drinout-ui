@@ -47,6 +47,13 @@ const routes = {
       path: '/work-session/report',
       showInSidebar: false
     }
+  },
+  task: {
+    home: {
+      label: 'Pendientes',
+      path: '/pendings',
+      showInSidebar: true
+    },
   }
 };
 
