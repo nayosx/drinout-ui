@@ -147,6 +147,16 @@ const HomeWorkSession = () => {
     }
   };
 
+  const handlePendingCancel = () => {
+    setShowEditor(false);
+    setQuillContent('');
+  }
+
+  const handlePendingRetry = () => {
+    setSaveError(false);
+  }
+
+
   return (
     <div className='container u-mt-4 u-mb-8'>
       {loading ? (

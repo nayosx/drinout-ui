@@ -1,0 +1,9 @@
+div.format-pendings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  ol, ul {
+    padding-left: 1.6rem;
+  }
+}

@@ -7,22 +7,49 @@ import { login } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaKey } from 'react-icons/fa';
 import routes from '../../routes';
+import { getRoleMenus } from '../../api/menu';
+import { Status } from '../../utils/status.util';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+    const [msgError, setMsgError] = useState('');
+    const [status, setStatus] = useState(Status.INITIAL);
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        setIsLoading(true);
+        setMsgError('');
+        setStatus(Status.LOADING);
         try {
             await login(values);
-            navigate(routes.task.home.path);
+            handleMenus();
         } catch (error) {
-            console.error('Error logging in:', error);
-            alert('Usuario o contraseña incorrectos. Intente nuevamente.');
+
+            if(error.code === 'ERR_NETWORK') {
+                setMsgError('Error de conexión. Verifique su conexión a internet.');
+            } else {
+                setMsgError('Usuario o contraseña incorrectos. Intente nuevamente.');
+            }
+            setStatus(Status.ERROR);
         } finally {
-            setIsLoading(false);
             setSubmitting(false);
+        }
+    };
+
+    const handleMenus = async () => {
+        try {
+            const menus = await getRoleMenus();
+            sessionStorage.setItem('menus', JSON.stringify(menus));
+
+            setStatus(Status.SUCCESS);
+            navigate(routes.task.home.path);
+
+        } catch (error) {
+
+            if(error.code === 'ERR_NETWORK') {
+                setMsgError('Error de conexión. Verifique su conexión a internet.');
+            } else {
+                setMsgError('No es posible obtener los menús. Intente nuevamente.');
+            }
+            setStatus(Status.ERROR);
         }
     };
 
@@ -38,6 +65,14 @@ const Login = () => {
                         <h1 className='u-text-center'>DrClin</h1>
                         <div className='u-text-center'>
                             <img src={logo} alt="DrClin Logo" className='logo' />
+                        </div>
+
+                        <div className='u-mb-2'>
+                            {status === Status.ERROR && (
+                                <div className="error-text u-mt-1">
+                                    {msgError}
+                                </div>
+                            )}
                         </div>
 
                         <Formik
@@ -87,12 +122,13 @@ const Login = () => {
                                     <div>
                                         <button
                                             type="submit"
-                                            disabled={isSubmitting || isLoading || !isValid || !dirty}
+                                            disabled={isSubmitting || status === 'loading' || !isValid || !dirty}
                                             className='u-btn u-btn--large u-btn-primary '
                                         >
-                                            {isLoading ? 'Iniciando...' : 'Iniciar'}
+                                            {status === 'loading' ? 'Iniciando...' : 'Iniciar'}
                                         </button>
                                     </div>
+
                                 </Form>
                             )}
                         </Formik>

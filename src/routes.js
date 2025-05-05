@@ -19,6 +19,25 @@ const routes = {
     path: '*',
     showInSidebar: false
   },
+  workSession: {
+    home: {
+      label: 'Daylog',
+      path: '/work-session',
+      showInSidebar: true
+    },
+    report: {
+      label: 'Reporte de Trabajo',
+      path: '/work-session/report',
+      showInSidebar: true
+    }
+  },
+  task: {
+    home: {
+      label: 'Pendientes',
+      path: '/pendings',
+      showInSidebar: true
+    },
+  },
   transaction: {
     list: {
       label: 'Lista de Transacciones',
@@ -36,25 +55,15 @@ const routes = {
       showInSidebar: false
     }
   },
-  workSession: {
+
+  menus: {
     home: {
-      label: 'Daylog',
-      path: '/work-session',
+      label: 'Menus',
+      path: '/menus',
       showInSidebar: true
     },
-    report: {
-      label: 'Reporte de Trabajo',
-      path: '/work-session/report',
-      showInSidebar: false
-    }
   },
-  task: {
-    home: {
-      label: 'Pendientes',
-      path: '/pendings',
-      showInSidebar: true
-    },
-  }
+
 };
 
 export default routes;
