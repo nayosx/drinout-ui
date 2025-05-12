@@ -36,18 +36,20 @@ const EditTransaction = () => {
     amount: transactionData ? transactionData.amount : '',
     paymentType: transactionData ? transactionData.payment_type_id.toString() : '',
     transactionType: transactionData ? transactionData.transaction_type : '',
+    category_id: transactionData && transactionData.category_id ? transactionData.category_id.toString() : '',
   };
-
+  
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const payload = {
         user_id: values.user_id,
         transaction_type: values.transactionType,
         payment_type_id: parseInt(values.paymentType, 10),
+        category_id: values.category_id ? parseInt(values.category_id, 10) : null,
         detail: values.detail,
         amount: parseFloat(values.amount).toFixed(2),
       };
-
+  
       await updateTransaction(id, payload);
       resetForm();
       alert('Transacción actualizada exitosamente.');
@@ -57,6 +59,7 @@ const EditTransaction = () => {
       alert('Hubo un error al actualizar la transacción.');
     }
   };
+  
 
   if (isLoading) {
     return (

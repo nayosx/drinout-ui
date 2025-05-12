@@ -37,18 +37,20 @@ const AddTransaction = () => {
     amount: '',
     paymentType: '',
     transactionType: '',
+    category_id: '',
   };
-
+  
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const payload = {
         user_id: values.user_id,
         transaction_type: values.transactionType,
         payment_type_id: parseInt(values.paymentType, 10),
+        category_id: values.category_id ? parseInt(values.category_id, 10) : null,
         detail: values.detail,
         amount: parseFloat(values.amount).toFixed(2),
       };
-
+  
       await createTransaction(payload);
       resetForm();
       alert('Transacción creada exitosamente.');
@@ -58,6 +60,7 @@ const AddTransaction = () => {
       alert('Hubo un error al crear la transacción.');
     }
   };
+  
 
   if (isLoading) {
     return (

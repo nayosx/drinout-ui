@@ -17,6 +17,7 @@ import { AuthProvider } from './AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomeTask from './pages/task/Home';
 import {HomeMenu} from './pages/menu/index';
+import { HomeMenuRoles } from './pages/menu/MenuRoles';
 
 function App() {
   const setTitle = useNavbarStore((state) => state.setTitle);
@@ -124,6 +125,18 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <HomeMenu setTitle={setTitle} />
+                </MainLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+
+          <Route 
+            path={routes.menus.homeRoles.path} 
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <HomeMenuRoles setTitle={setTitle} />
                 </MainLayout>
               </ProtectedRoute>
             } 

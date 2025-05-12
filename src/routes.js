@@ -62,6 +62,11 @@ const routes = {
       path: '/menus',
       showInSidebar: true
     },
+    homeRoles: {
+      label: 'Menus Roles',
+      path: '/menus-roles',
+      showInSidebar: true
+    },
   },
 
 };

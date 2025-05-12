@@ -20,6 +20,16 @@ export const getAllMenus = async () => {
   }
 }
 
+export const getAllMenuRoles = async () => {
+  try {
+    const response = await axiosInstance.get('/menus/allwithroles')
+    return response.data
+  } catch (error) {
+    console.error('Error fetching all menus with roles:', error)
+    throw error
+  }
+}
+
 export const getMenu = async (menuId) => {
   try {
     const response = await axiosInstance.get(`/menus/${menuId}`)
@@ -69,27 +79,16 @@ export const deleteMenu = async (menuId) => {
 }
 
 export const assignMenuToRole = async (menuId, roleId) => {
-  try {
-    const response = await axiosInstance.post(
-      `/menus/${menuId}/roles`,
-      { role_id: roleId },
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    return response.data
-  } catch (error) {
-    console.error(`Error assigning menu ${menuId} to role ${roleId}:`, error)
-    throw error
-  }
+  const { data } = await axiosInstance.post(
+    `/menus/${menuId}/roles`,
+    { role_id: roleId }
+  )
+  return data
 }
 
 export const removeMenuFromRole = async (menuId, roleId) => {
-  try {
-    const response = await axiosInstance.delete(
-      `/menus/${menuId}/roles/${roleId}`
-    )
-    return response.data
-  } catch (error) {
-    console.error(`Error removing menu ${menuId} from role ${roleId}:`, error)
-    throw error
-  }
+  const { data } = await axiosInstance.delete(
+    `/menus/${menuId}/roles/${roleId}`
+  )
+  return data
 }

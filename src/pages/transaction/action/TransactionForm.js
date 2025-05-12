@@ -1,12 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa';
 import validationSchema from './AddEdit.validate';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './TransactionForm.scss';
+import { getAllTransactionCategories } from '../../../api/transactionCategory';
 
 const TransactionForm = ({ initialValues, onSubmit, paymentTypes, submitLabel }) => {
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllTransactionCategories();
+        setCategories(data);
+      } catch (error) {
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <Formik
       enableReinitialize
@@ -66,6 +85,21 @@ const TransactionForm = ({ initialValues, onSubmit, paymentTypes, submitLabel })
             </div>
             <ErrorMessage name="transactionType" component="div" className="error-text" />
           </div>
+
+          {values.transactionType === 'OUT' && !loadingCategories && categories.length > 0 && (
+            <div className="form-group">
+              <label htmlFor="category">Categoría:</label>
+              <Field id="category" name="category_id" as="select" className="form-control">
+                <option value="">Seleccione una categoría</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.category_name}
+                  </option>
+                ))}
+              </Field>
+              <ErrorMessage name="category_id" component="div" className="error-text" />
+            </div>
+          )}
 
           <div className="form-group">
             <button type="submit" disabled={isSubmitting} className="u-btn u-btn-primary">
