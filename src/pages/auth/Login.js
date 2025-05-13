@@ -9,6 +9,7 @@ import { FaUser, FaKey } from 'react-icons/fa';
 import routes from '../../routes';
 import { getRoleMenus } from '../../api/menu';
 import { Status } from '../../utils/status.util';
+import { STORAGE_KEYS } from '../../utils/storageKeys';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -37,7 +38,7 @@ const Login = () => {
     const handleMenus = async () => {
         try {
             const menus = await getRoleMenus();
-            sessionStorage.setItem('menus', JSON.stringify(menus));
+            sessionStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(menus));
 
             setStatus(Status.SUCCESS);
             navigate(routes.task.home.path);
